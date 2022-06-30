@@ -4,20 +4,9 @@ const adminSchema = new mongoose.Schema({
   first_name: { type: String, default: null, required:  true },
   stud_id: { type: Number, default: null, required:  true },
   password: { type: String, required:  true },
-  result:{
-    english:{
-        marks : Number,
-        totalmarks : Number
-    },
-    maths:{
-        marks : Number,
-        totalmarks : Number
-    },
-    science:{
-        marks : Number,
-        totalmarks : Number
-    }
-  },
+  english: { type : Number, required : true },
+  maths: { type : Number, required : true },
+  science: { type : Number,required : true },
   token: { type: String }
 });
 
