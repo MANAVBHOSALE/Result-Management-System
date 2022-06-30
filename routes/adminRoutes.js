@@ -8,7 +8,7 @@ const Admin = require("../model/admin");
 
 // Add Student
 router.post('/addStudent',async (req, res) => {
-// Our Add Student logic starts here
+// Our addStudent logic starts here
 try {
     // Get user input
     const { first_name, stud_id, password, english, maths, science } = req.body;
@@ -34,9 +34,9 @@ try {
       first_name,
       stud_id,
       password: encryptedPassword,
-      english, 
-      maths, 
-      science
+      english : english, 
+      maths : maths, 
+      science : science
     });
 
     // Create token
@@ -55,7 +55,7 @@ try {
   } catch (err) {
     console.log(err);
   }
-  // Our register logic ends here
+  // Our addStudent logic ends here
 });
 
 // Login
@@ -100,7 +100,7 @@ router.put('/students/:id',async (req, res) => {
 // Our Update logic starts here
 try {
     // Get user input
-    const { stud_id, password } = req.body;
+    const { first_name, stud_id, password, english, maths, science } = req.body;
 
     // Validate user input
     if (!(stud_id && password)) {
@@ -108,7 +108,7 @@ try {
     }
     // Validate if user exist in our database
     const admin = await Admin.findOne({ stud_id });
-
+    admin.password = await bcrypt.hash(password, 10);
     if (admin && (await bcrypt.compare(password, admin.password))) {
       // Create token
       const token = jwt.sign(
@@ -120,15 +120,16 @@ try {
       );
       // save user token
       admin.token = token;
-      const user = await Admin.findByIdAndUpdate(req.params.id,req.body)
+      const user = await Admin.findByIdAndUpdate({_id:req.params.id}, {$set:{password : await bcrypt.hash(password, 10)},  first_name, stud_id, english, maths, science})
       // user
+      //admin.password = await bcrypt.hash(password, 10);
       return res.status(200).json(admin);
     }
     return res.status(400).send("Invalid Credentials");
   } catch (err) {
     console.log(err);
   }
-  // Our login logic ends here
+  // Our Update logic ends here
   });
 
 //Admin Delete
@@ -156,14 +157,8 @@ router.delete('/students/:id',async (req, res) => {
           );
           // save user token
           admin.token = token;
-          //const deleted = await Admin.findAndDelete({id : req.params.id}, function (err, results) { })
-          Admin.findByIdAndRemove(req.params.id, function (err, deletedStudent) {
-            if (err) {
-              return res.send('Error Deleting Data');
-            } else {
-              return res.json(deletedStudent);
-            }
-          });
+          
+          Admin.findByIdAndRemove(req.params.id);
           // user
           return res.status(200).json(admin);
         }
@@ -171,6 +166,6 @@ router.delete('/students/:id',async (req, res) => {
       } catch (err) {
         console.log(err);
       }
-      // Our login logic ends here
+      // Our Delete logic ends here
       });
 module.exports = router;
