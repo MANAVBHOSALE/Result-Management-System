@@ -16,6 +16,7 @@ try {
     // Validate user input
     if (!(stud_id && password)) {
       res.status(400).send("All input is required");
+      return;
     }
     // Validate if user exist in our database
     const admin = await Admin.findOne({ stud_id });
@@ -23,7 +24,7 @@ try {
     if (admin && (await bcrypt.compare(password, admin.password))) {
       // Create token
       const token = jwt.sign(
-        { user_id: user._id, stud_id },
+        { user_id: Admin._id, stud_id },
         process.env.JWT_KEY,
         {
           expiresIn: "3h",
@@ -36,23 +37,25 @@ try {
       // user
       res.status(200).json(admin);
     }
-    res.status(400).send("Invalid Credentials");
+    return res.status(400).send("Invalid Credentials");
   } catch (err) {
     console.log(err);
+    return;
   }
   // Our login logic ends here
 });
 
 //Student Update
-router.put('/students/:id',async (req, res) => {
+router.put('/update/:id',async (req, res) => {
 // Our Update logic starts here
 try {
     // Get user input
-    const { first_name, password } = req.body;
+    const { first_name, stud_id, password } = req.body;
 
     // Validate user input
-    if (!(first_name && password)) {
+    if (!(stud_id && password)) {
       res.status(400).send("All input is required");
+      return;
     }
     // Validate if user exist in our database
     const admin = await Admin.findOne({ stud_id });
@@ -68,20 +71,21 @@ try {
       );
       // save user token
       admin.token = token;
-      const user = await Admin.findByIdAndUpdate({id:req.params.id}, { $set: req.body }, { new: true }, callback)
+      const user = await Admin.findByIdAndUpdate({_id:req.params.id}, {$set:{password : await bcrypt.hash(password, 10)},  first_name})
       // user
-      res.status(200).json(admin);
+      return res.status(200).json(admin);
     }
     res.status(400).send("Invalid Credentials");
   } catch (err) {
     console.log(err);
+    return;
   }
-  // Our login logic ends here
+  // Our update logic ends here
   });
 
 //Get Result
 router.get('/results',async (req, res) => {
-    // Our login logic starts here
+    // Our results logic starts here
     try {
         // Get user input
         const { stud_id, password } = req.body;
@@ -89,6 +93,7 @@ router.get('/results',async (req, res) => {
         // Validate user input
         if (!(stud_id && password)) {
           res.status(400).send("All input is required");
+          return;
         }
         // Validate if user exist in our database
         const admin = await Admin.findOne({ stud_id });
@@ -96,7 +101,7 @@ router.get('/results',async (req, res) => {
         if (admin && (await bcrypt.compare(password, admin.password))) {
           // Create token
           const token = jwt.sign(
-            { user_id: user._id, stud_id },
+            { user_id: admin._id, stud_id },
             process.env.JWT_KEY,
             {
               expiresIn: "3h",
@@ -109,11 +114,12 @@ router.get('/results',async (req, res) => {
           // user
           res.status(200).json(admin);
         }
-        res.status(400).send("Invalid Credentials");
+        return res.status(400).send("Invalid Credentials");
       } catch (err) {
         console.log(err);
+        return;
       }
-      // Our login logic ends here
+      // Our result logic ends here
 });
 
 
